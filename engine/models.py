@@ -12,15 +12,23 @@ class Board(models.Model):
     start_position = models.PositiveIntegerField(default=0)
 
 
+from model_utils.managers import InheritanceManager
+
+
 class Space(models.Model):
     class Meta:
         unique_together = ['board', 'space_id']
+    objects = InheritanceManager()
+
     board = models.ForeignKey(Board, on_delete=models.PROTECT)
     space_id = models.PositiveIntegerField()
     name = models.CharField(max_length=100)
 
-    def buyable(self):
-        return False
+    def land_on(self, player):
+        return("Landed on Space")
+
+    def actions(self):
+        return ['land_on']
 
     def __str__(self):
         return self.name
@@ -30,6 +38,9 @@ class Buyable(Space):
     price = models.PositiveIntegerField()
     mortgage = models.PositiveIntegerField(null=True)
 
+    def actions(self):
+        return super(Buyable, self).actions() + ['buyable']
+
     def get_price(self):
         return self.price
 
@@ -37,6 +48,9 @@ class Buyable(Space):
         if self.mortgage is None:
             return self.price / 2
         return self.mortgage
+
+    def land_on(self, player):
+        return super(Buyable, self).land_on(player) + ("Landed on Buyable")
 
     def can_develop(self):
         return False
@@ -71,6 +85,9 @@ class Property(Buyable):
     rent_3_house = models.PositiveIntegerField()
     rent_4_house = models.PositiveIntegerField()
     rent_hotel = models.PositiveIntegerField()
+
+    def land_on(self, player):
+        return super(Property, self).land_on(player) + ("Landed on Property")
 
     def get_rent_colorset(self):
         if self.rent_colorset is None:
