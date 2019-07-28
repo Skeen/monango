@@ -7,8 +7,58 @@ from django.contrib.auth import get_user_model
 
 from model_utils.managers import InheritanceManager
 
+from abc import ABC, abstractmethod
 
-class Board(models.Model):
+
+from django.dispatch import receiver, Signal
+
+dice_signal = Signal(providing_args=["name"])
+
+class AbstractDice(ABC):
+    @abstractmethod
+    def roll(self, game, player):
+        pass
+
+class FairDice(AbstractDice):
+    def roll(self, game, player):
+        return random.randint(1, 6) + random.randint(1, 6)
+
+@receiver(dice_signal)
+def register_fair_dice(sender, name, **kwargs):
+    if name is None or name == "FairDice":
+        return FairDice
+
+class DeterministicDice(AbstractDice):
+    def roll(self, game, player):
+        return 1
+
+@receiver(dice_signal)
+def register_deterministic_dice(sender, name, **kwargs):
+    if name is None or name == "DeterministicDice":
+        return DeterministicDice
+
+
+class Dice(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.CharField(max_length=4000, blank=True)
+    dice_name = models.CharField(max_length=100)
+
+    # TODO: Configuration parameters for dice_class?
+    # TODO: Configurable number of dice and eyes
+    # TODO: Custom event on dice?
+    
+    def roll(self, game, player):
+        dice_classes = dice_signal.send(sender=self.__class__, name=self.dice_name)
+        matching_dice = [x[1] for x in dice_classes if x[1] is not None]
+        if len(matching_dice) > 1:
+            raise ValueError("Multiple dice matched!")
+        if len(matching_dice) == 0:
+            raise ValueError("No dice matched!")
+        dice_class = matching_dice[0]
+        return dice_class().roll(game, player)
+
+
+class RuleSet(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=4000, blank=True)
 
@@ -18,6 +68,7 @@ class Board(models.Model):
     num_houses = models.PositiveIntegerField()
     num_hotels = models.PositiveIntegerField()
     turn_time = models.PositiveIntegerField()
+    dice = models.ForeignKey(Dice, on_delete=models.PROTECT)
 
 
 class Space(models.Model):
@@ -25,7 +76,7 @@ class Space(models.Model):
         unique_together = ['board', 'position']
     objects = InheritanceManager()
 
-    board = models.ForeignKey(Board, related_name="spaces", on_delete=models.PROTECT)
+    board = models.ForeignKey(RuleSet, related_name="spaces", on_delete=models.PROTECT)
     # TODO: Check entire range of positions is covered (i.e. no holes)
     position = models.PositiveIntegerField()
     name = models.CharField(max_length=100)
@@ -127,16 +178,14 @@ class TooFewPlayers(Exception):
 
 
 class Game(models.Model):
-    board = models.ForeignKey(Board, on_delete=models.PROTECT)
+    board = models.ForeignKey(RuleSet, on_delete=models.PROTECT)
 
     # TODO: Check that current_player is in players
     current_player = models.ForeignKey('Player', null=True, related_name="+", on_delete=models.PROTECT)
     last_action = models.DateTimeField(null=True)
 
     def roll_dice(self):
-        # TODO: Configurable number of dice and eyes
-        # TODO: Custom event on dice?
-        return random.randint(1, 6) + random.randint(1, 6)
+        return self.board.dice.roll(self, self.current_player)
 
     def start(self):
         # TODO: Run background task to timeout players

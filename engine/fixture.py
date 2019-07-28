@@ -1,22 +1,42 @@
 from engine.models import (
-    Board,
+    RuleSet,
     Space,
     Buyable,
     RailroadGroup,
     Railroad,
     PropertyGroup,
-    Property
+    Property,
+    Dice
 )
 
+def seed_fair_dice():
+    fair_dice, _ = Dice.objects.get_or_create(
+        name="Fair dice",
+        description="Two uniform randomness dice",
+        dice_name="FairDice"
+    )
+    return fair_dice
+
+def seed_deterministic_dice():
+    deterministic_dice, _ = Dice.objects.get_or_create(
+        name="All 1 die",
+        description="A single die always rolls 1",
+        dice_name="DeterministicDice"
+    )
+    return deterministic_dice
+
 def seed_us_board():
+    # Seed our dice
+    fair_dice = seed_fair_dice()
     # Board
-    board, _ = Board.objects.get_or_create(
+    ruleset, _ = RuleSet.objects.get_or_create(
         name="Standard (American Edition)",
         description="The start Monopoly board layout as of 2008",
         start_money=1500,
         num_houses=32,
         num_hotels=12,
         turn_time=120,
+        dice=fair_dice,
     )
     # Groups
     brown_group, _ = PropertyGroup.objects.get_or_create(
@@ -57,12 +77,12 @@ def seed_us_board():
     )
     # Spaces
     Space.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=0,
         name="Start",
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=1,
         name="Mediterranean Avenue",
         
@@ -78,12 +98,12 @@ def seed_us_board():
         price=60,
     )
     Space.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=2,
         name="Community Chest",
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=3,
         name="Baltic Avenue",
         
@@ -99,12 +119,12 @@ def seed_us_board():
         price=60,
     )
     Space.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=4,
         name="Income Tax",
     )
     Railroad.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=5,
         name="Reading Railroad",
 
@@ -113,7 +133,7 @@ def seed_us_board():
         price=200,
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=6,
         name="Oriental Avenue",
         
@@ -129,12 +149,12 @@ def seed_us_board():
         price=100,
     )
     Space.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=7,
         name="Chance",
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=8,
         name="Vermont Avenue",
         
@@ -150,7 +170,7 @@ def seed_us_board():
         price=100,
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=9,
         name="Connecticut Avenue",
         
@@ -166,12 +186,12 @@ def seed_us_board():
         price=120,
     )
     Space.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=10,
         name="In Jail / Just Visiting",
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=11,
         name="St. Charles Place",
         
@@ -187,14 +207,14 @@ def seed_us_board():
         price=140,
     )
     Buyable.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=12,
         name="Electric Company",
 
         price=150,
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=13,
         name="States Avenue",
         
@@ -210,7 +230,7 @@ def seed_us_board():
         price=140,
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=14,
         name="Virginia Avenue",
         
@@ -226,7 +246,7 @@ def seed_us_board():
         price=160,
     )
     Railroad.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=15,
         name="Pennsylvania Railroad",
 
@@ -235,7 +255,7 @@ def seed_us_board():
         price=200,
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=16,
         name="St. James Place",
         
@@ -251,7 +271,7 @@ def seed_us_board():
         price=180,
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=17,
         name="Tennessee Avenue",
         
@@ -267,12 +287,12 @@ def seed_us_board():
         price=180,
     )
     Space.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=18,
         name="Community Chest",
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=19,
         name="New York Avenue",
         
@@ -288,12 +308,12 @@ def seed_us_board():
         price=200,
     )
     Space.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=20,
         name="Free Parking",
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=21,
         name="Kentucky Avenue",
         
@@ -309,12 +329,12 @@ def seed_us_board():
         price=220,
     )
     Space.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=22,
         name="Chance",
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=23,
         name="Indiana Avenue",
         
@@ -330,7 +350,7 @@ def seed_us_board():
         price=220,
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=24,
         name="Illinois Avenue",
         
@@ -346,7 +366,7 @@ def seed_us_board():
         price=240,
     )
     Railroad.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=25,
         name="B&O Railroad",
 
@@ -355,7 +375,7 @@ def seed_us_board():
         price=200,
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=26,
         name="Atlantic Avenue",
         
@@ -371,7 +391,7 @@ def seed_us_board():
         price=260,
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=27,
         name="Ventnor Avenue",
         
@@ -387,14 +407,14 @@ def seed_us_board():
         price=260,
     )
     Buyable.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=28,
         name="Water Works",
 
         price=150,
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=29,
         name="Marvin Gardens",
         
@@ -410,12 +430,12 @@ def seed_us_board():
         price=280,
     )
     Space.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=30,
         name="Go To Jail",
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=31,
         name="Pacific Avenue",
         
@@ -431,7 +451,7 @@ def seed_us_board():
         price=300,
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=32,
         name="North Carolina Avenue",
         
@@ -447,12 +467,12 @@ def seed_us_board():
         price=300,
     )
     Space.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=33,
         name="Community Chest",
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=34,
         name="Pennsylvania Avenue",
         
@@ -468,7 +488,7 @@ def seed_us_board():
         price=320,
     )
     Railroad.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=35,
         name="Short Line",
 
@@ -477,12 +497,12 @@ def seed_us_board():
         price=200,
     )
     Space.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=36,
         name="Chance",
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=37,
         name="Park Place",
         
@@ -498,12 +518,12 @@ def seed_us_board():
         price=350,
     )
     Space.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=38,
         name="Luxury Tax",
     )
     Property.objects.get_or_create(
-        board=board,
+        board=ruleset,
         position=39,
         name="Broadwalk",
         
@@ -518,4 +538,4 @@ def seed_us_board():
 
         price=400,
     )
-    return board
+    return ruleset

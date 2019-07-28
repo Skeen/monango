@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 
-from engine.fixture import seed_us_board
+from engine.fixture import seed_us_board, seed_deterministic_dice
 from engine.models import (
     Player,
     Game,
@@ -34,6 +34,9 @@ class AnimalTestCase(TestCase):
     def setUp(self):
         self.num_players = 4
         board = seed_us_board()
+        deterministic_dice = seed_deterministic_dice()
+        board.dice = deterministic_dice
+        board.save()
         self.game = self.seed_game(board)
         players = self.seed_players(self.game, self.num_players)
 
@@ -59,6 +62,5 @@ class AnimalTestCase(TestCase):
     def test_playing(self):
         self.game.start()
         self.assertEqual(self.game.players.first().position, 0)
-        # TODO: Monkey-patch random.randint
         self.game.go()
-        self.assertGreater(self.game.players.first().position, 0)
+        self.assertEqual(self.game.players.first().position, 1)
